@@ -1,0 +1,126 @@
+#Organização do dashboard
+ui <- dashboardPage(
+    
+    dashboardHeader(title = "Expectativa de vida"),
+    
+    dashboardSidebar(
+        sidebarMenu(
+            menuItem("Mapas", tabName = "mapas", icon = icon("globe-americas")),
+            menuItem("Gráficos de linha", tabName = "graficos-linha", icon = icon("chart-line")),
+            menuItem("Gráficos de dispersão", tabName = "graficos", icon = icon("chart-bar")),
+            menuItem("Curvas de Lorenz", tabName = "lorenz", icon = icon("chart-area")),
+            menuItem("Código", tabName = "codigo", icon = icon("file-text-o"),
+                     menuSubItem("dados.R", tabName = "dados", icon = icon("angle-right")),
+                     menuSubItem("ui.R", tabName = "ui", icon = icon("angle-right")),
+                     menuSubItem("server.R", tabName = "server", icon = icon("angle-right"))),
+            menuItem("Descrição", tabName = "descricao", icon = icon("book-open"))
+        )
+    ),
+    
+    dashboardBody(
+        tabItems(
+            #Mapas
+            tabItem(tabName = "mapas",
+                    fluidRow(
+                        titlePanel(h3("Expectativa de vida, idade média e mortalidade infantil por país ao longo dos anos")),
+                        hr(),
+                        column(width=6,
+                               selectInput("var",
+                                           "Var:",
+                                           label = ("Selecione a variável:"),
+                                           choices = c("Expectativa de vida", 
+                                                       "Mediana das idades", 
+                                                       "Mortalidade infantil"))),
+                        column(width=10,
+                               conditionalPanel(
+                                   condition = "input.var == 'Expectativa de vida'",
+                                   sliderInput("ano1",
+                                               "Ano:",
+                                               min = min(data1$Year),
+                                               max = max(data1$Year),
+                                               value = 2019,
+                                               sep = "")),
+                               conditionalPanel(    
+                                   condition = "input.var == 'Mediana das idades'",
+                                   sliderInput("ano2",
+                                               "Ano:",
+                                               min = min(data_ma2$Year),
+                                               max = max(data_ma2$Year),
+                                               value = 2020,
+                                               step = 5,
+                                               sep = "")),
+                               conditionalPanel(  
+                                   condition = "input.var == 'Mortalidade infantil'",
+                                   sliderInput("ano3",
+                                               "Ano:",
+                                               min = min(data_cd2$Year),
+                                               max = max(data_cd2$Year),
+                                               value = 2017,
+                                               step = 1,
+                                               sep = ""))),
+                        hr(),
+                        mainPanel(
+                            leafletOutput("mapa")
+                        )
+                    )
+            ),
+            #Gráficos de linha
+            tabItem(tabName = "graficos-linha",
+                    fluidRow(
+                        titlePanel(h3("Expectativa de vida por país ao longo dos anos")),
+                        column(width=6,
+                               selectInput("pais", "País 1", paises)),
+                        hr(),
+                        column(width=10,
+                               selectInput("pais2", "País 2", paises)
+                               
+                        ),
+                        mainPanel(
+                            plotlyOutput("graph")))),
+            #Gráficos de dispersão
+            tabItem(tabName = "graficos",
+                    fluidRow(
+                        titlePanel(h3("Relação entre expectativa de vida e outras variáveis para o ano de 2015")),
+                        column(width=6,
+                               selectInput("var0", "Escolha uma variável dependente:",
+                                           choices = c("log(Mortalidade infantil)", "Mediana das idades", "log(PIB per capita)",
+                                                       "Escolaridade", "% de população urbana", "Nº de filhos")),
+                               column(width=6,
+                                      checkboxInput("continente", label = "Agrupar por continente", value = FALSE))
+                               
+                        ),
+                        mainPanel(
+                            plotlyOutput("graficodispersao")
+                        ))),
+            #Curvas de Lorenz
+            tabItem(tabName = "lorenz",
+                    fluidRow(
+                        titlePanel(h3("Curvas de Lorenz: quanto maior a área entre a curva e a reta, maior o grau de desigualdade entre os países do mundo")),
+                        column(width=6,
+                               selectInput("var8", "Escolha uma variável:",
+                                           choices = c("Expectativa de vida","Mortalidade infantil", "Mediana das idades", "PIB per capita",
+                                                       "Escolaridade", "% de população urbana", "Nº de filhos"))
+
+                        ),
+                        mainPanel(
+                            plotOutput("cLorenz")
+                        ))),
+            #Código
+            tabItem(tabName = "codigo",
+                    h2("Widgets tab content")),
+            #Subitem códigos
+            tabItem(tabName = "dados",
+                    box(width = NULL, status = "primary", solidHeader = TRUE, title= "dados.R",
+                        pre(includeText("dados")))),
+            tabItem(tabName = "ui",
+                    box( width = NULL, status = "primary", solidHeader = TRUE, title="ui.R",
+                         pre(includeText("ui")))),
+            tabItem(tabName = "server",
+                    box( width = NULL, status = "primary", solidHeader = TRUE, title="server.R",
+                         pre(includeText("server")))),
+            #Descrição
+            tabItem(tabName = "descricao",
+                    box( width = NULL, status = "primary", solidHeader = TRUE, title="Descrição",
+                         includeMarkdown("descricao.Rmd")))
+            
+        )))
