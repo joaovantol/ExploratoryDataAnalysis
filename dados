@@ -1,0 +1,60 @@
+library(shiny)
+library(leaflet)
+library(spData)
+library(tidyverse)
+library(maps)
+library(sf)
+library(dplyr)
+library(shinydashboard)
+library(rmarkdown)
+library(plotly)
+library(ineq)
+
+#Leitura e organização dos dados (coletados em https://ourworldindata.org/life-expectancy)
+
+dados <- read.csv("life--expectancy.csv", header = TRUE)
+df_median_age <- read.csv("median-age.csv", header = TRUE)
+df_child_deaths <- read.csv("child-mortality-around-the-world.csv", header = TRUE)
+mortalidade <- read.csv("child-deaths-igme-data.csv", header = TRUE)
+filhos <- read.csv("children-born-per-woman.csv", header = TRUE)
+pib <- read.csv("maddison-data-gdp-per-capita-in-2011us.csv", header = TRUE)
+escola <- read.csv("mean-years-of-schooling-long-run.csv", header = TRUE)
+urbano <- read.csv("share-of-population-urban.csv", header = TRUE)
+pib <- pib[, -c(5)]
+
+join1 <- full_join(mortalidade, filhos, by = c("Entity" = "Entity", "Year" = "Year", "Code" = "Code"))
+join2 <- full_join(join1,dados, by = c("Entity" = "Entity", "Year" = "Year", "Code" = "Code"))
+join3 <- full_join(join2,pib, by = c("Entity" = "Entity", "Year" = "Year", "Code" = "Code"))
+join4 <- full_join(join3,escola, by = c("Entity" = "Entity", "Year" = "Year", "Code" = "Code"))
+join5 <- full_join(join4,df_median_age, by = c("Entity" = "Entity", "Year" = "Year", "Code" = "Code"))
+join6 <- full_join(join5,urbano, by = c("Entity" = "Entity", "Year" = "Year", "Code" = "Code"))
+
+colnames(join6) <- c("País","Codigo","Ano","Mortalidade","Filhos", 
+                     "Expectativa","PIB", "Escola","Mediana", "Urbana")
+
+data2015 = join6 %>% filter(Ano == 2015)
+continentes <- read.csv("all.csv", header = TRUE)
+continentes <- continentes[, -c(1,2,4,5,7:11)]
+data2015cont <- inner_join(data2015,continentes, by = c("Codigo" = "alpha.3"))
+
+attach(data2015cont)
+
+#Adicionando código Alpha 3 à base de dados world
+codes <- read.csv("all.csv", header = TRUE)
+codes <- codes[, -c(1,4:11)]
+worldcodes <- left_join(world,codes, by = c("iso_a2" = "alpha.2"))
+worldcodes[51,12] = "NAM" #Adicionando a Namíbia manualmente
+
+data <- inner_join(worldcodes,dados, by = c("alpha.3" = "Code"))
+data_ma <- inner_join(worldcodes,df_median_age, by = c("alpha.3" = "Code"))
+data_cd <- inner_join(worldcodes,df_child_deaths, by = c("alpha.3" = "Code"))
+
+data2 <- data[, -c(1,3:10,12,13)]
+data_ma2 <- data_ma[, -c(1,3:10,12,13)]
+data_cd2 <- data_cd[, -c(1,3:10,12,13)]
+data1 = data2 %>% filter(Year >= 1800)
+
+colnames(data_ma2)[4] <- "MedianAge"
+colnames(data_cd2)[4] <- "MortalidadeInfantil"
+
+paises <- unique(data1$name_long) %>% sort()
