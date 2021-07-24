@@ -1,0 +1,167 @@
+server <- function(input, output) {
+    {
+        output$mapa <- renderLeaflet({
+            
+            #Mapa para expectativa de vida
+            if (input$var == "Expectativa de vida"){
+                ano <- input$ano1
+                bins <- c(15,20,25,35,40,45,50,55,60,65,70,75,80,85)
+                data_filtered <- data1 %>% filter(Year %in% ano)
+                pal <- colorBin("YlOrRd", domain = data_filtered$Life.expectancy, bins = bins)
+                
+                labels <- sprintf("<strong>%s</strong><br/>%g anos<sup></sup>",
+                                  data_filtered$name_long, 
+                                  data_filtered$Life.expectancy) %>% lapply(htmltools::HTML)
+                
+                
+                mapa <- leaflet(data = data_filtered) %>% addTiles() %>%
+                    addPolygons(fillColor = ~pal(Life.expectancy),
+                                weight = 2,
+                                opacity = 1,
+                                color = "black",
+                                fillOpacity = 0.7,
+                                highlight = highlightOptions(weight = 3,
+                                                             color = "black",
+                                                             fillOpacity = 0.7,
+                                                             bringToFront = TRUE),
+                                label = labels,
+                                labelOptions = labelOptions(
+                                    style = list("font-weight" = "normal", padding = "3px 8px"),
+                                    textsize = "15px",
+                                    direction = "auto")
+                    ) %>%
+                    addLegend(pal = pal, 
+                              values = ~data_filtered$Life.expectancy, 
+                              opacity = 0.7, 
+                              title = "Anos",
+                              position = "bottomright")
+                
+                mapa
+                
+            #Mapa para mediana das idades    
+            }else if (input$var == "Mediana das idades"){
+                ano <- input$ano2
+                bins <- c(10,15,20,25,35,40,45,50,55,60)
+                data_filtered <- data_ma2 %>% filter(Year %in% ano)
+                pal <- colorBin("YlOrRd", domain = data_filtered$MedianAge, bins = bins)
+                
+                labels <- sprintf("<strong>%s</strong><br/>%g anos<sup></sup>",
+                                  data_filtered$name_long,
+                                  data_filtered$MedianAge) %>% lapply(htmltools::HTML)
+                
+                mapa <- leaflet(data = data_filtered) %>% addTiles() %>%
+                    addPolygons(fillColor = ~pal(MedianAge),
+                                weight = 2,
+                                opacity = 1,
+                                color = "black",
+                                fillOpacity = 0.7,
+                                highlight = highlightOptions(weight = 3,
+                                                             color = "black",
+                                                             fillOpacity = 0.7,
+                                                             bringToFront = TRUE),
+                                label = labels,
+                                labelOptions = labelOptions(
+                                    style = list("font-weight" = "normal", padding = "3px 8px"),
+                                    textsize = "15px",
+                                    direction = "auto")
+                    )%>%
+                    addLegend(pal = pal, values = ~data_filtered$MedianAge, opacity = 0.7, title = "Anos",
+                              position = "bottomright")
+                
+                mapa
+                
+            #Mapa para mortalidade infantil        
+            }else if (input$var == "Mortalidade infantil") {
+                ano <- input$ano3
+                bins <- c(0,5,10,15,20,25,30,35,40,45,50)
+                data_filtered <- data_cd2 %>% filter(Year %in% ano)
+                pal <- colorBin("YlOrRd", domain = data_filtered$MortalidadeInfantil, bins = bins)
+                
+                labels <- sprintf("<strong>%s</strong><br/>%g <sup></sup>",
+                                  data_filtered$name_long,
+                                  data_filtered$MortalidadeInfantil) %>% lapply(htmltools::HTML)
+                
+                mapa <- leaflet(data = data_filtered) %>% addTiles() %>%
+                    addPolygons(fillColor = ~pal(MortalidadeInfantil),
+                                weight = 2,
+                                opacity = 1,
+                                color = "black",
+                                fillOpacity = 0.7,
+                                highlight = highlightOptions(weight = 3,
+                                                             color = "black",
+                                                             fillOpacity = 0.7,
+                                                             bringToFront = TRUE),
+                                label = labels,
+                                labelOptions = labelOptions(
+                                    style = list("font-weight" = "normal", padding = "3px 8px"),
+                                    textsize = "15px",
+                                    direction = "auto")
+                    )%>%
+                    addLegend(pal = pal, values = ~data_filtered$MortalidadeInfantil, opacity = 0.7, title = "% de crianças",
+                              position = "bottomright")
+                
+                mapa
+                
+            }
+        })
+    }
+    #Gráficos de linhas
+    {
+        output$graph<- renderPlotly({
+            pais <- input$pais
+            pais2 <- input$pais2
+            data_c = data1 %>% filter(name_long %in% c(pais, pais2))
+            x <- list(title = "Ano")
+            y <- list(title = "Expectativa de vida")
+            plot_ly(data_c, x = ~Year, y = ~Life.expectancy, color = ~name_long, type = 'scatter', mode = 'lines') %>% 
+                add_markers() %>%
+                layout(xaxis = x, yaxis = y, width = 700, height = 500)
+        })
+    }
+    #Gráficos de dispersão
+    {
+        output$graficodispersao <- renderPlotly({
+            
+            if (input$var0 == "log(Mortalidade infantil)") {var0 <- log(Mortalidade)}
+            else if (input$var0 == "Mediana das idades") {var0 <- Mediana}
+            else if (input$var0 == "log(PIB per capita)") {var0 <- log(PIB)}
+            else if (input$var0 == "Escolaridade") {var0 <- Escola}
+            else if (input$var0 == "% de população urbana") {var0 <- Urbana}
+            else if (input$var0 == "Nº de filhos") {var0 <- Filhos}
+            
+            label <- input$var0
+            x <- list(title = "Expectativa de vida")
+            y <- list(title = label)
+            
+            if (input$continente == FALSE) {
+                plot_ly(data = (data2015cont), x = ~Expectativa, y = ~var0, color = ~País, colors = "Set1",
+                        type = 'scatter') %>%
+                    layout(xaxis = x, yaxis = y)
+            }
+            
+            else if (input$continente == TRUE) {
+                plot_ly(data = (data2015cont), x = ~Expectativa, y = ~var0, color = ~region, colors = "Set1",
+                        type = 'scatter') %>%
+                    layout(xaxis = x, yaxis = y)
+            }
+        })}
+    #Curvas de Lorenz
+    {
+        output$cLorenz <- renderPlot({
+
+            if (input$var8 == "Expectativa de vida") {plot(Lc(Expectativa), main='Curva de Lorenz', col=4)}
+            else if (input$var8 == "Mortalidade infantil") {plot(Lc(Mortalidade), main='Curva de Lorenz', col=4)}
+            else if (input$var8 == "Mediana das idades") {plot(Lc(Mediana), main='Curva de Lorenz', col=4)}
+            else if (input$var8 == "PIB per capita") {plot(Lc(PIB), main='Curva de Lorenz', col=4)}
+            else if (input$var8 == "Escolaridade") {plot(Lc(Escola), main='Curva de Lorenz', col=4)}
+            else if (input$var8 == "% de população urbana") {plot(Lc(Urbana), main='Curva de Lorenz', col=4)}
+            else if (input$var8 == "Nº de filhos") {plot(Lc(Filhos), main='Curva de Lorenz', col=4)}
+
+        },height = 600, width = 600)}
+}
+
+shinyApp(ui, server)
+#Adicionando o app em https://www.shinyapps.io/
+#library(rsconnect)
+#rsconnect::deployApp()
+#https://carolsb.shinyapps.io/projetoVED/
