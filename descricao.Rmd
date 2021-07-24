@@ -1,0 +1,19 @@
+
+Este projeto foi desenvolvido para a disciplina SME0803 - Visualização e Exploração de Dados, do ICMC - Instituto De Ciências Matemáticas e de Computação da USP- Universidade de São Paulo, ministrada pela docente Cibele Maria Russo Novelli.
+
+Autores:
+
+- **Carolina Spera Braga**
+- **João Paulo van Tol Amaral Guerra**
+
+Todos os dados foram coletados do site [Our World in Data](https://ourworldindata.org/).
+
+Descrição das variáveis: 
+
+- **Expectativa de vida:** número médio de anos que um(a) recém-nascido(a) poderia esperar viver se ele(a) transcorresse sua vida sujeito(a) aos índices de mortalidade específicos de um dado período.
+- **Mediana das idades:** idade que divide uma população em duas partes de iguais tamanhos, ou seja, há tantas pessoas com idade maior que a mediana quanto pessoas com idade menor que a mediana.
+- **Mortalidade infantil:** cota percentual de crianças nascidas vivas e que morreram antes de completar cinco anos de idade.
+- **PIB per capita:** valor do produto interno bruto (PIB) em dólares dividido pelo número de habitantes de um país, sendo o PIB a soma total de bens e serviços produzidos em dado período.
+- **% de população urbana:** cota percentual da população vivendo em áreas urbanas de acordo com as definições de cada nação.
+- **Nº de filhos:** número de filhos que uma mulher teria se ela vivesse até o fim de seus anos férteis e tivesse filhos de acordo às taxas de fertilidade específicas a sua idade no ano específico.
+- **Escolaridade:** quantidade média de anos de ensino em todos os níveis educacionais para a população adulta.
